@@ -1,0 +1,7 @@
+services:
+  web-app:
+    build:
+      context: ${APP_CONTEXT:-.}
+      dockerfile: Dockerfile
+    ports:
+      - '7090:80'
