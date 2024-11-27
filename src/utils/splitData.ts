@@ -1,13 +1,13 @@
-import { ImageType } from '~/types/image';
+import { Photo } from '~/contexts/Gallery/types';
 
 type Column = {
-  images: { data: ImageType; index: number }[];
+  images: { data: Photo; index: number }[];
   totalHeight: number;
 };
 
-export const splitData = (images: ImageType[], columns: number) => {
+export const splitData = (photos: Photo[], columns: number) => {
   const columnsArray: Column[] = new Array(columns).fill(null).map(() => ({ images: [], totalHeight: 0 }));
-  images.forEach((image, index) => {
+  photos.forEach((photo, index) => {
     // Find the column with the minimum total height
     const minColumnIndex = columnsArray.reduce((minIndex, column, currentIndex) => {
       const currentTotalHeight = column.totalHeight;
@@ -16,10 +16,10 @@ export const splitData = (images: ImageType[], columns: number) => {
     }, 0);
 
     // Add the image to the column with the minimum total height
-    columnsArray[minColumnIndex].images.push({ data: image, index: index });
+    columnsArray[minColumnIndex].images.push({ data: photo, index: index });
 
     // Update the current height of the selected column
-    columnsArray[minColumnIndex].totalHeight += image.dimensions.height;
+    columnsArray[minColumnIndex].totalHeight += (photo.dimensions?.height || 100) / (photo.dimensions?.width || 100);
   });
   return columnsArray;
 };

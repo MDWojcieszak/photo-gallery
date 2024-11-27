@@ -14,6 +14,7 @@ const fallSeasonPalette = {
   yellow: '#F9F871',
   blue: '#009DF8',
   lightBlue: '#D1F5FF',
+  lightBlue02: '#A9D6FF',
 };
 
 export const colors = {
