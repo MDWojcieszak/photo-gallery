@@ -46,8 +46,6 @@ export const Photo = (p: PhotoProps) => {
     setShowShortDetails(false);
   };
 
-  const handleOpen = () => {};
-
   return (
     <div
       ref={containerRef}
