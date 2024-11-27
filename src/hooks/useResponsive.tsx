@@ -6,5 +6,8 @@ export const useResponsive = () => {
 
   if (!ctx) throw new Error('Use this hook only in ResponsiveContextProvider!');
 
-  return ctx;
+  return {
+    ...ctx,
+    isMobile: ctx.device === 'mobile' || ctx.device === 'largeMobile',
+  };
 };
