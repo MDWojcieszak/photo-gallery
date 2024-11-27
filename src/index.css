@@ -1,13 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 100vw;
-  min-height: 100vh;
+  min-width: 100svw;
+  width: 100svw;
+  height: 100svh;
+  min-height: 100svh;
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Roboto';
   line-height: 1.5;
   font-weight: 400;
 
