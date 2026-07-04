@@ -14,12 +14,20 @@ export const baseTheme = {
     l: 22,
     xl: 32,
     xxl: 42,
+    xxxl: 72,
   },
   borderRadius: {
     small: 4,
     default: 8,
     medium: 10,
     large: 12,
+  },
+  fonts: {
+    serif: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
+    sans: "'Inter', 'Roboto', system-ui, -apple-system, sans-serif",
+  },
+  layout: {
+    maxWidth: 1440,
   },
 };
 
