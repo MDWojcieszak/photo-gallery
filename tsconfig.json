@@ -29,7 +29,9 @@
       "~/routes/*": ["src/routes/*"],
       "~/utils/*": ["src/utils/*"],
       "~/components/*": ["src/components/*"],
-      "~/constants/*": ["src/constants/*"]
+      "~/constants/*": ["src/constants/*"],
+      "~/lib/*": ["src/lib/*"],
+      "~/*": ["src/*"]
     }
   },
   "exclude": ["node_modules"],
