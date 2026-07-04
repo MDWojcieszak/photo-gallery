@@ -1,6 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 api.ts
 base.ts
 common.ts
@@ -112,6 +111,8 @@ docs/CreateCommandProgressMarkerDto.md
 docs/CreateCommentDto.md
 docs/CreateEmptyAlbumDto.md
 docs/CreateGalleryDto.md
+docs/CreateGearDto.md
+docs/CreateGearSystemDto.md
 docs/CreateGrantDto.md
 docs/CreateImmichAlbumDto.md
 docs/CreatePermissionGroupDto.md
@@ -170,6 +171,11 @@ docs/GalleryRecentDto.md
 docs/GalleryResponse.md
 docs/GalleryStatus.md
 docs/GalleryTotalsDto.md
+docs/GearApi.md
+docs/GearCategory.md
+docs/GearItemResponse.md
+docs/GearOverviewResponse.md
+docs/GearSystemResponse.md
 docs/GenerateTokenDto.md
 docs/GenerateTokenResponseDto.md
 docs/GrantListResponse.md
@@ -347,6 +353,7 @@ docs/RegisterDto.md
 docs/ReorderCollectionItemsDto.md
 docs/ReorderDto.md
 docs/ReorderGalleriesDto.md
+docs/ReorderGearDto.md
 docs/ReorderPostsDto.md
 docs/ReprocessDto.md
 docs/ReprocessStartedResponse.md
@@ -402,6 +409,7 @@ docs/SessionListResponseDto.md
 docs/SessionResponseDto.md
 docs/SetBlogAlbumItemsDto.md
 docs/SetGalleryItemsDto.md
+docs/SetHeroDto.md
 docs/SetHomePinsDto.md
 docs/SetPoiCategoriesDto.md
 docs/SetPoiHoursDto.md
@@ -435,6 +443,8 @@ docs/TrendsRange.md
 docs/TrendsSeriesDto.md
 docs/UpdateCommandProgressMarkerDto.md
 docs/UpdateGalleryDto.md
+docs/UpdateGearDto.md
+docs/UpdateGearSystemDto.md
 docs/UpdatePermissionGroupDto.md
 docs/UploadResponseDto.md
 docs/UpsertCategoryTranslationDto.md

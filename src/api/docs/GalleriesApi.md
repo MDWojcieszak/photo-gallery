@@ -7,11 +7,13 @@ All URIs are relative to *http://localhost*
 |[**galleriesControllerCreate**](#galleriescontrollercreate) | **POST** /galleries | |
 |[**galleriesControllerDelete**](#galleriescontrollerdelete) | **DELETE** /galleries/{id} | |
 |[**galleriesControllerGetById**](#galleriescontrollergetbyid) | **GET** /galleries/{id} | |
+|[**galleriesControllerGetHero**](#galleriescontrollergethero) | **GET** /galleries/hero | |
 |[**galleriesControllerImportExisting**](#galleriescontrollerimportexisting) | **POST** /galleries/import-existing | |
 |[**galleriesControllerLibrary**](#galleriescontrollerlibrary) | **GET** /galleries/library | |
 |[**galleriesControllerList**](#galleriescontrollerlist) | **GET** /galleries | |
 |[**galleriesControllerPatchStatus**](#galleriescontrollerpatchstatus) | **PATCH** /galleries/{id}/status | |
 |[**galleriesControllerReorder**](#galleriescontrollerreorder) | **PUT** /galleries/order | |
+|[**galleriesControllerSetHero**](#galleriescontrollersethero) | **PUT** /galleries/hero | |
 |[**galleriesControllerSetItems**](#galleriescontrollersetitems) | **PUT** /galleries/{id}/items | |
 |[**galleriesControllerUpdate**](#galleriescontrollerupdate) | **PATCH** /galleries/{id} | |
 
@@ -163,6 +165,49 @@ const { status, data } = await apiInstance.galleriesControllerGetById(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Gallery with ordered items (admin preview) |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **galleriesControllerGetHero**
+> PortfolioHeroResponse galleriesControllerGetHero()
+
+
+### Example
+
+```typescript
+import {
+    GalleriesApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new GalleriesApi(configuration);
+
+const { status, data } = await apiInstance.galleriesControllerGetHero();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**PortfolioHeroResponse**
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Current homepage hero selection (curated order) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -410,6 +455,57 @@ const { status, data } = await apiInstance.galleriesControllerReorder(
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**200** | Reorder galleries in the portfolio |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **galleriesControllerSetHero**
+> PortfolioHeroResponse galleriesControllerSetHero(setHeroDto)
+
+
+### Example
+
+```typescript
+import {
+    GalleriesApi,
+    Configuration,
+    SetHeroDto
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new GalleriesApi(configuration);
+
+let setHeroDto: SetHeroDto; //
+
+const { status, data } = await apiInstance.galleriesControllerSetHero(
+    setHeroDto
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **setHeroDto** | **SetHeroDto**|  | |
+
+
+### Return type
+
+**PortfolioHeroResponse**
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | Replace the homepage hero selection (drag &amp; drop) |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
