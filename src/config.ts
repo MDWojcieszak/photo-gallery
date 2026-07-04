@@ -11,7 +11,7 @@ export const SITE = {
   role: 'Photography',
   description:
     'Landscape, cityscape and travel photography by Mateusz Wojcieszak — a curated selection of moments captured around the world.',
-  url: (import.meta.env.VITE_SITE_URL ?? 'https://mateuszwojcieszak.com').replace(/\/$/, ''),
+  url: (import.meta.env.VITE_SITE_URL ?? 'https://photo.wojcieszak.dev').replace(/\/$/, ''),
 } as const;
 
 export const CONTACT = {
