@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { colors } from './colors';
-
-import { useContext } from 'react';
 import { ThemeContext } from '~/contexts/Theme/ThemeContext';
 
 export const baseTheme = {

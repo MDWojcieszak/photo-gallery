@@ -7,12 +7,11 @@ import { mkUseStyles } from '~/utils/theme';
 export const PageBackground = () => {
   const styles = useStyles();
   const { data } = useHero(12);
-  const images = data?.images ?? [];
-
-  const image = useMemo(
-    () => (images.length ? images[Math.floor(Math.random() * images.length)] : null),
-    [images.length],
-  );
+  // Pick once per loaded hero set.
+  const image = useMemo(() => {
+    const images = data?.images ?? [];
+    return images.length ? images[Math.floor(Math.random() * images.length)] : null;
+  }, [data]);
 
   if (!image) return null;
 

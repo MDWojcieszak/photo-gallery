@@ -114,7 +114,7 @@ const useStyles = mkUseStyles((t) => ({
     width: '100%',
     maxWidth: 900,
     margin: '0 auto',
-    padding: `clamp(120px, 18vh, 190px) clamp(20px, 5vw, 56px) clamp(72px, 10vh, 120px)`,
+    padding: 'clamp(120px, 18vh, 190px) clamp(20px, 5vw, 56px) clamp(72px, 10vh, 120px)',
   },
   hero: {
     display: 'flex',

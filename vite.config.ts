@@ -29,8 +29,22 @@ export default defineConfig(({ mode }) => {
         '/portfolio/galleries': proxy,
         '/portfolio/gear': proxy,
         '/portfolio/settings': proxy,
+        '/portfolio/contact': proxy,
+        '/portfolio/inquiries': proxy,
         '/image': proxy,
-        '/gallery': proxy,
+      },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          // Long-lived vendor chunks: app deploys don't bust the cached libraries.
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            motion: ['framer-motion'],
+            markdown: ['react-markdown'],
+            data: ['axios', 'zod'],
+          },
+        },
       },
     },
   };

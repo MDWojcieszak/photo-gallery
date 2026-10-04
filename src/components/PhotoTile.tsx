@@ -81,7 +81,7 @@ const useStyles = mkUseStyles((t) => ({
     bottom: t.spacing.sm,
     display: 'flex',
     alignItems: 'center',
-    padding: `5px 10px`,
+    padding: '5px 10px',
     borderRadius: 999,
     backgroundColor: 'rgba(12,12,14,0.5)',
     backdropFilter: 'blur(6px)',
