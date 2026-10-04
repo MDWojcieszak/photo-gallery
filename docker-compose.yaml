@@ -3,5 +3,9 @@ services:
     build:
       context: ${APP_CONTEXT:-.}
       dockerfile: Dockerfile
+      # Build-time config (baked into the JS bundle) — taken from the deploy env.
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_SITE_URL: ${VITE_SITE_URL}
     ports:
       - '7090:80'
