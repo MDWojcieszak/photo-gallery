@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion';
 import { ComponentType, useState } from 'react';
 import { LuArrowUpRight, LuCheck, LuCopy, LuInstagram, LuMail, LuMapPin, LuPhone } from 'react-icons/lu';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { Footer } from '~/components/Footer';
+import { InquiryContext, InquiryForm } from '~/components/InquiryForm';
 import { Nav } from '~/components/Nav';
 import { PageBackground } from '~/components/PageBackground';
 import { CONTACT, SITE } from '~/config';
+import { ContactLinkState } from '~/lib/contact';
+import { contactFormOpen, contactTopics } from '~/lib/portfolio';
+import { useContactConfig } from '~/hooks/usePortfolio';
 import { useResponsive } from '~/hooks/useResponsive';
 import { useSeo } from '~/hooks/useSeo';
 import { mkUseStyles, useTheme } from '~/utils/theme';
@@ -107,6 +112,23 @@ const ContactRow = ({ row, delay }: { row: Row; delay: number }) => {
 
 export const Contact = () => {
   const styles = useStyles();
+  const location = useLocation();
+  const [params, setParams] = useSearchParams();
+  const linkState = (location.state ?? {}) as ContactLinkState;
+  const galleryId = params.get('album');
+  const context: InquiryContext | undefined = galleryId
+    ? {
+        galleryId,
+        imageId: params.get('image') ?? undefined,
+        galleryTitle: linkState.galleryTitle,
+        thumbUrl: linkState.thumbUrl,
+      }
+    : undefined;
+
+  // The form shows only when the panel has it enabled (and a privacy notice to acknowledge).
+  const { data: contact } = useContactConfig();
+  const topics = contact ? contactTopics(contact) : [];
+
   useSeo({
     title: `Contact — ${SITE.name}`,
     description: `Get in touch with ${SITE.name} for prints, collaborations and commissions.`,
@@ -153,6 +175,26 @@ export const Contact = () => {
               <ContactRow key={r.label} row={r} delay={i * 0.06} />
             ))}
           </div>
+
+          {contactFormOpen(contact) && (
+            <motion.section
+              id='message'
+              style={styles.formSection}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 style={styles.formTitle}>Send a message</h2>
+              {contact.intro && <p style={styles.formIntro}>{contact.intro}</p>}
+              <InquiryForm
+                topics={topics}
+                locale={contact.locale}
+                context={context}
+                onClearContext={() => setParams({}, { replace: true })}
+              />
+            </motion.section>
+          )}
         </div>
 
         <Footer />
@@ -175,7 +217,7 @@ const useStyles = mkUseStyles((t) => ({
     width: '100%',
     maxWidth: 820,
     margin: '0 auto',
-    padding: `clamp(100px, 14vh, 150px) clamp(20px, 5vw, 56px) clamp(72px, 10vh, 120px)`,
+    padding: 'clamp(100px, 14vh, 150px) clamp(20px, 5vw, 56px) clamp(72px, 10vh, 120px)',
   },
   eyebrow: {
     display: 'block',
@@ -246,6 +288,28 @@ const useStyles = mkUseStyles((t) => ({
   rowArrow: {
     display: 'flex',
     flexShrink: 0,
+  },
+  formSection: {
+    marginTop: 'clamp(56px, 9vh, 96px)',
+    scrollMarginTop: 96,
+  },
+  formIntro: {
+    maxWidth: 560,
+    marginTop: `-${t.spacing.m}px`,
+    marginBottom: 'clamp(24px, 4vh, 40px)',
+    fontSize: 15,
+    fontWeight: 300,
+    lineHeight: 1.7,
+    color: t.colors.textMuted,
+    whiteSpace: 'pre-line',
+  },
+  formTitle: {
+    fontFamily: t.fonts.serif,
+    fontWeight: 500,
+    fontSize: 'clamp(30px, 4vw, 44px)',
+    lineHeight: 1.05,
+    color: t.colors.text,
+    marginBottom: 'clamp(24px, 4vh, 40px)',
   },
   copyBtn: {
     display: 'inline-flex',

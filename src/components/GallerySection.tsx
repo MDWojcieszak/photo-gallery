@@ -4,7 +4,8 @@ import { LuArrowRight } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
 import { Lightbox } from '~/components/Lightbox';
 import { MasonryGrid } from '~/components/MasonryGrid';
-import { HomeSection } from '~/lib/portfolio';
+import { useContactConfig } from '~/hooks/usePortfolio';
+import { contactFormOpen, HomeSection } from '~/lib/portfolio';
 import { mkUseStyles, useTheme } from '~/utils/theme';
 
 export const GallerySection = ({ section }: { section: HomeSection }) => {
@@ -12,6 +13,7 @@ export const GallerySection = ({ section }: { section: HomeSection }) => {
   const theme = useTheme();
   const [hover, setHover] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const canAsk = contactFormOpen(useContactConfig().data);
 
   const items = section.previewItems;
   if (!items.length) return null;
@@ -41,7 +43,7 @@ export const GallerySection = ({ section }: { section: HomeSection }) => {
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
           >
-            View gallery
+            View album
             <span style={styles.count}>({section.imageCount})</span>
             <motion.span style={styles.arrow} animate={{ x: hover ? 4 : 0 }} transition={{ duration: 0.3 }}>
               <LuArrowRight size={15} color={theme.colors.accent} />
@@ -57,6 +59,7 @@ export const GallerySection = ({ section }: { section: HomeSection }) => {
         index={lightboxIndex}
         onClose={() => setLightboxIndex(null)}
         onIndex={setLightboxIndex}
+        gallery={canAsk ? { id: section.id, title: section.title } : undefined}
       />
     </section>
   );
@@ -65,12 +68,12 @@ export const GallerySection = ({ section }: { section: HomeSection }) => {
 const useStyles = mkUseStyles((t) => ({
   section: {
     width: '100%',
-    padding: `clamp(32px, 5vh, 64px) 0`,
+    padding: 'clamp(32px, 5vh, 64px) 0',
   },
   inner: {
     maxWidth: t.layout.maxWidth,
     margin: '0 auto',
-    padding: `0 clamp(20px, 5vw, 56px)`,
+    padding: '0 clamp(20px, 5vw, 56px)',
   },
   header: {
     display: 'flex',

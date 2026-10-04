@@ -1,8 +1,40 @@
 import { motion } from 'framer-motion';
 import { ComponentType, useState } from 'react';
 import { FaCameraRetro } from 'react-icons/fa';
-import { LuBackpack, LuBox, LuLightbulb, LuPackage } from 'react-icons/lu';
+import { GiBinoculars, GiDeliveryDrone } from 'react-icons/gi';
+import {
+  LuAperture,
+  LuBackpack,
+  LuBatteryCharging,
+  LuBatteryFull,
+  LuBox,
+  LuCable,
+  LuCamera,
+  LuCircleDot,
+  LuCloudRain,
+  LuCornerDownRight,
+  LuCrosshair,
+  LuEye,
+  LuFilm,
+  LuHardDrive,
+  LuLaptop,
+  LuLightbulb,
+  LuLink,
+  LuMemoryStick,
+  LuOrbit,
+  LuPackage,
+  LuPlug,
+  LuPlugZap,
+  LuSparkles,
+  LuThermometer,
+  LuUmbrella,
+  LuUsb,
+  LuVideo,
+  LuZap,
+} from 'react-icons/lu';
+import { MdSettingsRemote } from 'react-icons/md';
 import { RiCameraLensLine } from 'react-icons/ri';
+import { TbTelescope } from 'react-icons/tb';
 import { BlurImage } from '~/components/BlurImage';
 import { useGear } from '~/hooks/usePortfolio';
 import { useResponsive } from '~/hooks/useResponsive';
@@ -11,17 +43,49 @@ import { mkUseStyles, useTheme } from '~/utils/theme';
 
 const CATEGORY_LABEL: Record<GearCategory, string> = {
   CAMERA: 'Camera',
+  FILM_CAMERA: 'Film camera',
   LENS: 'Lens',
+  TELECONVERTER: 'Teleconverter',
+  ADAPTER: 'Adapter',
+  FILTER: 'Filter',
+  TELESCOPE: 'Telescope',
+  SMART_TELESCOPE: 'Smart telescope',
+  ASTRO_CAMERA: 'Astro camera',
+  GUIDE_SCOPE: 'Guide scope',
+  MOUNT: 'Mount',
+  EYEPIECE: 'Eyepiece',
+  BINOCULARS: 'Binoculars',
+  DIAGONAL: 'Diagonal',
+  DEW_HEATER: 'Dew heater',
   TRIPOD: 'Tripod',
-  BAG: 'Bag',
+  HEAD: 'Tripod head',
+  GIMBAL: 'Gimbal',
+  FLASH: 'Flash',
   LIGHTING: 'Lighting',
+  LIGHT_MODIFIER: 'Light modifier',
+  BATTERY: 'Battery',
+  CHARGER: 'Charger',
+  POWER_BANK: 'Power bank',
+  POWER_STATION: 'Power station',
+  DRONE: 'Drone',
+  ACTION_CAM: 'Action cam',
+  REMOTE: 'Remote',
+  MEMORY_CARD: 'Memory card',
+  CARD_READER: 'Card reader',
+  STORAGE: 'Storage',
+  COMPUTER: 'Computer',
+  BAG: 'Bag',
+  STRAP: 'Strap',
+  RAIN_COVER: 'Rain cover',
+  CLEANING: 'Cleaning',
+  CABLE: 'Cable',
   ACCESSORY: 'Accessory',
   OTHER: 'Gear',
 };
 
 type IconType = ComponentType<{ size?: number; style?: React.CSSProperties }>;
 
-const TripodIcon: IconType = ({ size = 24, style }) => (
+const TripodIcon = ({ size = 24, style }: { size?: number; style?: React.CSSProperties }) => (
   <svg
     width={size}
     height={size}
@@ -43,23 +107,46 @@ const TripodIcon: IconType = ({ size = 24, style }) => (
   </svg>
 );
 
-const categoryIcon = (c: GearCategory): IconType => {
-  switch (c) {
-    case 'CAMERA':
-      return FaCameraRetro;
-    case 'LENS':
-      return RiCameraLensLine;
-    case 'TRIPOD':
-      return TripodIcon;
-    case 'BAG':
-      return LuBackpack;
-    case 'LIGHTING':
-      return LuLightbulb;
-    case 'ACCESSORY':
-      return LuBox;
-    default:
-      return LuPackage;
-  }
+const CATEGORY_ICON: Record<GearCategory, IconType> = {
+  CAMERA: FaCameraRetro,
+  FILM_CAMERA: LuFilm,
+  LENS: RiCameraLensLine,
+  TELECONVERTER: RiCameraLensLine,
+  ADAPTER: LuPlug,
+  FILTER: LuCircleDot,
+  TELESCOPE: TbTelescope,
+  SMART_TELESCOPE: TbTelescope,
+  ASTRO_CAMERA: LuCamera,
+  GUIDE_SCOPE: LuCrosshair,
+  MOUNT: LuOrbit,
+  EYEPIECE: LuEye,
+  BINOCULARS: GiBinoculars,
+  DIAGONAL: LuCornerDownRight,
+  DEW_HEATER: LuThermometer,
+  TRIPOD: TripodIcon,
+  HEAD: TripodIcon,
+  GIMBAL: LuAperture,
+  FLASH: LuZap,
+  LIGHTING: LuLightbulb,
+  LIGHT_MODIFIER: LuUmbrella,
+  BATTERY: LuBatteryFull,
+  CHARGER: LuBatteryCharging,
+  POWER_BANK: LuBatteryCharging,
+  POWER_STATION: LuPlugZap,
+  DRONE: GiDeliveryDrone,
+  ACTION_CAM: LuVideo,
+  REMOTE: MdSettingsRemote,
+  MEMORY_CARD: LuMemoryStick,
+  CARD_READER: LuUsb,
+  STORAGE: LuHardDrive,
+  COMPUTER: LuLaptop,
+  BAG: LuBackpack,
+  STRAP: LuLink,
+  RAIN_COVER: LuCloudRain,
+  CLEANING: LuSparkles,
+  CABLE: LuCable,
+  ACCESSORY: LuBox,
+  OTHER: LuPackage,
 };
 
 const twoDigit = (n: number): string => String(n).padStart(2, '0');
@@ -70,7 +157,7 @@ const GearCard = ({ item, index }: { item: GearItem; index: number }) => {
   const { isMobile } = useResponsive();
   const [hovered, setHovered] = useState(false);
 
-  const Icon = categoryIcon(item.category);
+  const Icon = CATEGORY_ICON[item.category];
   const brand = item.brand?.trim() ?? '';
   const model = item.model?.trim() ?? '';
   const heroName = model || brand || CATEGORY_LABEL[item.category];
@@ -114,6 +201,8 @@ const GearCard = ({ item, index }: { item: GearItem; index: number }) => {
             lowRes={item.lowResUrl}
             alt={[brand, model].filter(Boolean).join(' ') || heroName}
             ratio={16 / 10}
+            objectFit='contain'
+            transparent
             radius={theme.borderRadius.medium}
           />
         </motion.div>
@@ -198,8 +287,12 @@ export const GearSection = () => {
   const styles = useStyles();
   const { data, loading } = useGear();
 
-  const systems = (data?.systems ?? []).filter((s) => s.visible !== false && s.items.length > 0);
-  const ungrouped = (data?.ungrouped ?? []).filter((i) => i.visible !== false);
+  const shown = (i: GearItem) => i.visible !== false && i.ownership === 'OWNED';
+  const systems = (data?.systems ?? [])
+    .filter((s) => s.visible !== false)
+    .map((s) => ({ ...s, items: s.items.filter(shown) }))
+    .filter((s) => s.items.length > 0);
+  const ungrouped = (data?.ungrouped ?? []).filter(shown);
 
   if (!loading && systems.length === 0 && ungrouped.length === 0) return null;
 
@@ -220,7 +313,7 @@ export const GearSection = () => {
               name={s.name}
               label={s.label}
               description={s.description}
-              items={s.items.filter((it) => it.visible !== false)}
+              items={s.items}
             />
           ))}
 

@@ -11,6 +11,7 @@ type BlurImageProps = {
   objectFit?: 'cover' | 'contain';
   radius?: number;
   priority?: boolean;
+  transparent?: boolean;
   style?: CSSProperties;
 };
 
@@ -22,6 +23,7 @@ export const BlurImage = ({
   objectFit = 'cover',
   radius = 0,
   priority = false,
+  transparent = false,
   style,
 }: BlurImageProps) => {
   const styles = useStyles();
@@ -36,6 +38,7 @@ export const BlurImage = ({
         ...styles.container,
         borderRadius: radius,
         aspectRatio: ratio ? `${ratio}` : undefined,
+        ...(transparent ? { backgroundColor: 'transparent' } : null),
         ...style,
       }}
     >

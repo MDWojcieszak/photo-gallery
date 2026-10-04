@@ -8,7 +8,7 @@ type NavLink = { label: string; to: string; hash?: string };
 
 const LINKS: NavLink[] = [
   { label: 'Home', to: '/' },
-  { label: 'Galleries', to: '/', hash: '#galleries' },
+  { label: 'Albums', to: '/', hash: '#albums' },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
 ];

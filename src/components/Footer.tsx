@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { LuArrowUp, LuArrowUpRight, LuInstagram, LuMail, LuMapPin } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
+import { PrivacyModal } from '~/components/PrivacyModal';
+import { useContactConfig } from '~/hooks/usePortfolio';
 import { CONTACT, SITE } from '~/config';
 import { useResponsive } from '~/hooks/useResponsive';
 import { mkUseStyles, useTheme } from '~/utils/theme';
@@ -10,7 +12,7 @@ type Dest = string | { pathname: string; hash: string };
 
 const EXPLORE: { label: string; to: Dest }[] = [
   { label: 'Home', to: '/' },
-  { label: 'Galleries', to: { pathname: '/', hash: '#galleries' } },
+  { label: 'Albums', to: { pathname: '/', hash: '#albums' } },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
 ];
@@ -66,6 +68,10 @@ export const Footer = () => {
   const theme = useTheme();
   const { isMobile } = useResponsive();
   const year = new Date().getFullYear();
+
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const contact = useContactConfig().data;
+  const privacyNotice = contact?.privacyNotice;
 
   const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -186,6 +192,14 @@ export const Footer = () => {
               &copy; {year} {SITE.name}
               <span style={styles.dot}>&middot;</span>
               {CONTACT.location}
+              {privacyNotice && (
+                <>
+                  <span style={styles.dot}>&middot;</span>
+                  <button type='button' style={styles.privacy} onClick={() => setPrivacyOpen(true)}>
+                    Privacy
+                  </button>
+                </>
+              )}
             </span>
 
             <motion.button
@@ -218,6 +232,9 @@ export const Footer = () => {
           </div>
         </div>
       </div>
+      {contact && privacyNotice && (
+        <PrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} locale={contact.locale} />
+      )}
     </footer>
   );
 };
@@ -369,6 +386,16 @@ const useStyles = mkUseStyles((t) => ({
     display: 'flex',
     alignItems: 'center',
     gap: t.spacing.l,
+  },
+  privacy: {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
+    letterSpacing: 'inherit',
+    textTransform: 'inherit',
+    color: 'inherit',
+    cursor: 'pointer',
   },
   copy: {
     display: 'inline-flex',

@@ -64,6 +64,11 @@ export const GalleryDetailResponse = z.object({
   coverUrl: nullableStr,
   imageCount: z.coerce.number().catch(0),
   items: z.array(PortfolioImage).catch([]),
+  /** Contact form config for the requested locale — decides whether "Ask about…" is offered. */
+  contact: z
+    .lazy(() => ContactConfig)
+    .nullish()
+    .catch(null),
 });
 export type GalleryDetailResponse = z.infer<typeof GalleryDetailResponse>;
 
@@ -107,7 +112,47 @@ export const ImageMeta = z.object({
 export type ImageMeta = z.infer<typeof ImageMeta>;
 
 export const GearCategory = z
-  .enum(['CAMERA', 'LENS', 'TRIPOD', 'BAG', 'LIGHTING', 'ACCESSORY', 'OTHER'])
+  .enum([
+    'CAMERA',
+    'FILM_CAMERA',
+    'LENS',
+    'TELECONVERTER',
+    'ADAPTER',
+    'FILTER',
+    'TELESCOPE',
+    'SMART_TELESCOPE',
+    'ASTRO_CAMERA',
+    'GUIDE_SCOPE',
+    'MOUNT',
+    'EYEPIECE',
+    'BINOCULARS',
+    'DIAGONAL',
+    'DEW_HEATER',
+    'TRIPOD',
+    'HEAD',
+    'GIMBAL',
+    'FLASH',
+    'LIGHTING',
+    'LIGHT_MODIFIER',
+    'BATTERY',
+    'CHARGER',
+    'POWER_BANK',
+    'POWER_STATION',
+    'DRONE',
+    'ACTION_CAM',
+    'REMOTE',
+    'MEMORY_CARD',
+    'CARD_READER',
+    'STORAGE',
+    'COMPUTER',
+    'BAG',
+    'STRAP',
+    'RAIN_COVER',
+    'CLEANING',
+    'CABLE',
+    'ACCESSORY',
+    'OTHER',
+  ])
   .catch('OTHER');
 export type GearCategory = z.infer<typeof GearCategory>;
 
@@ -116,6 +161,7 @@ export const GearItem = z.object({
   category: GearCategory,
   brand: z.string().catch(''),
   model: z.string().catch(''),
+  ownership: z.enum(['OWNED', 'WISHLIST', 'RETIRED']).catch('OWNED'),
   systemId: nullableStr,
   description: nullableStr,
   coverUrl: nullableStr,
@@ -146,28 +192,23 @@ export type GearOverview = z.infer<typeof GearOverview>;
 
 const client = axios.create({ baseURL: API_URL });
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const fetchHero = async (limit = 12, signal?: AbortSignal): Promise<HeroResponse> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockHero(limit, signal);
   const res = await client.get('/portfolio/hero', { params: { limit }, signal });
   return HeroResponse.parse(res.data);
 };
 
 export const fetchGalleries = async (signal?: AbortSignal): Promise<GalleryListResponse> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockGalleries(signal);
   const res = await client.get('/portfolio/galleries', { signal });
   return GalleryListResponse.parse(res.data);
 };
 
 export const fetchHome = async (signal?: AbortSignal): Promise<HomeResponse> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockHome();
   const res = await client.get('/portfolio/home', { signal });
   return HomeResponse.parse(res.data);
 };
 
 export const fetchSettings = async (signal?: AbortSignal): Promise<PortfolioSettings> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockSettings();
   const res = await client.get('/portfolio/settings', { signal });
   return PortfolioSettings.parse(res.data);
 };
@@ -179,24 +220,127 @@ export const fetchGalleryBySlug = async (
   query: GalleryQuery = {},
   signal?: AbortSignal,
 ): Promise<GalleryDetailResponse> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockGalleryBySlug(slug, query);
+  const locale = contactLocale();
   const res = await client.get(`/portfolio/galleries/${encodeURIComponent(slug)}`, {
-    params: { orientation: query.orientation, take: query.take, skip: query.skip },
+    params: { orientation: query.orientation, locale, take: query.take, skip: query.skip },
     signal,
   });
-  return GalleryDetailResponse.parse(res.data);
+  const data = GalleryDetailResponse.parse(res.data);
+  // Same payload as GET /portfolio/contact — reuse it so the contact page needn't refetch.
+  if (data.contact && !contactCache.has(locale)) contactCache.set(locale, Promise.resolve(data.contact));
+  return data;
 };
 
 export const fetchImageMeta = async (id: string, signal?: AbortSignal): Promise<ImageMeta> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockImageMeta(id, signal);
   const res = await client.get('/image', { params: { id }, signal });
   return ImageMeta.parse(res.data);
 };
 
 export const fetchGear = async (signal?: AbortSignal): Promise<GearOverview> => {
-  if (USE_MOCK) return (await import('~/lib/mock')).mockGear();
   const res = await client.get('/portfolio/gear', { signal });
   return GearOverview.parse(res.data);
+};
+
+export const InquiryTopic = z.enum(['SESSION', 'PRINT', 'LICENSE', 'COLLABORATION', 'OTHER']);
+export type InquiryTopic = z.infer<typeof InquiryTopic>;
+
+export const INQUIRY_TOPIC_LABEL: Record<InquiryTopic, string> = {
+  SESSION: 'Photo session',
+  PRINT: 'Print / photo purchase',
+  LICENSE: 'Usage license',
+  COLLABORATION: 'Collaboration',
+  OTHER: 'Other',
+};
+
+export type InquiryPayload = {
+  name: string;
+  email: string;
+  phone?: string;
+  topic: InquiryTopic;
+  message: string;
+  galleryId?: string;
+  imageId?: string;
+  acknowledgedPrivacyNotice: true;
+  /** Language the visitor used — the one the contact config was resolved to. */
+  locale?: string;
+  website: string;
+};
+
+export type InquiryError = 'rate' | 'context' | 'disabled' | 'invalid' | 'error';
+
+const errorMessage = (data: unknown): string => {
+  const msg = (data as { message?: unknown } | undefined)?.message;
+  return Array.isArray(msg) ? msg.join(' ') : typeof msg === 'string' ? msg : '';
+};
+
+export const inquiryErrorOf = (e: unknown): InquiryError => {
+  if (!axios.isAxiosError(e) || !e.response) return 'error';
+  if (e.response.status === 429) return 'rate';
+  if (e.response.status === 403) return 'disabled';
+  if (e.response.status === 400)
+    return /unknown gallery or photo/i.test(errorMessage(e.response.data)) ? 'context' : 'invalid';
+  return 'error';
+};
+
+export const submitInquiry = async (payload: InquiryPayload): Promise<void> => {
+  await client.post('/portfolio/inquiries', payload);
+};
+
+export const ContactConfig = z.object({
+  enabled: z.boolean().catch(false),
+  /** Locale the texts were resolved to. */
+  locale: z.string().catch('en'),
+  intro: nullableStr,
+  topics: z.array(InquiryTopic.or(z.string())).catch([]),
+  privacyNotice: nullableStr,
+  /** Language of the notice — differs from `locale` when the backend fell back to its default. */
+  privacyNoticeLocale: nullableStr,
+  privacyNoticeVersion: nullableNum,
+  privacyNoticeFallback: z.boolean().catch(false),
+  administrator: z.object({ name: z.string(), email: z.string(), address: nullableStr }).nullish().catch(null),
+});
+export type ContactConfig = z.infer<typeof ContactConfig>;
+
+/** Offered topics, in canonical order, ignoring values this build doesn't know. */
+export const contactTopics = (c: ContactConfig): InquiryTopic[] =>
+  InquiryTopic.options.filter((t) => c.topics.includes(t));
+
+/** The form is usable only when enabled with a notice to acknowledge and at least one topic. */
+export const contactFormOpen = (c: ContactConfig | null | undefined): c is ContactConfig & { privacyNotice: string } =>
+  !!(c?.enabled && c.privacyNotice && contactTopics(c).length);
+
+/** Languages the contact texts (intro, privacy notice) are offered in. */
+export const CONTACT_LOCALES = [
+  { code: 'en', label: 'English' },
+  { code: 'pl', label: 'Polski' },
+] as const;
+
+/**
+ * Where the visitor writes from: Polish for Polish browsers, English otherwise (the site UI is
+ * English, so not the backend's default). This decides the form's texts, the `locale` sent with
+ * an inquiry and therefore which privacy notice is recorded as acknowledged — reading another
+ * translation in the privacy modal does not change it.
+ */
+export const contactLocale = (): string => {
+  const langs = typeof navigator === 'undefined' ? [] : navigator.languages ?? [navigator.language];
+  return langs[0]?.toLowerCase().startsWith('pl') ? 'pl' : 'en';
+};
+
+// Shared by the footer and the contact page — one request per locale per page load.
+const contactCache = new Map<string, Promise<ContactConfig>>();
+export const fetchContact = (locale: string): Promise<ContactConfig> => {
+  let pending = contactCache.get(locale);
+  if (!pending) {
+    pending = (async () => {
+      const res = await client.get('/portfolio/contact', { params: { locale } });
+      return ContactConfig.parse(res.data);
+    })().catch((e) => {
+      contactCache.delete(locale);
+      throw e;
+    });
+    contactCache.set(locale, pending);
+  }
+  return pending;
 };
 
 export const aspectRatio = (img: Pick<PortfolioImage, 'width' | 'height' | 'orientation'>): number => {

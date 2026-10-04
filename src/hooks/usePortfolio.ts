@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ContactConfig,
+  contactLocale,
+  fetchContact,
   fetchGalleries,
   fetchGalleryBySlug,
   fetchGear,
@@ -61,6 +64,29 @@ export const useHome = (): AsyncState<HomeResponse> => useAsync((signal) => fetc
 export const useSettings = (): AsyncState<PortfolioSettings> => useAsync((signal) => fetchSettings(signal), []);
 
 export const useGear = (): AsyncState<GearOverview> => useAsync((signal) => fetchGear(signal), []);
+
+export type ContactConfigState = { data: ContactConfig | undefined; loading: boolean };
+
+/**
+ * Contact form config for `locale` (default: the visitor's). Keeps the previous locale's data
+ * while another loads, so switching the privacy modal's translation never blanks it.
+ */
+export const useContactConfig = (locale: string = contactLocale()): ContactConfigState => {
+  const [state, setState] = useState<ContactConfigState>({ data: undefined, loading: true });
+
+  useEffect(() => {
+    let alive = true;
+    setState((s) => ({ ...s, loading: true }));
+    fetchContact(locale)
+      .then((data) => alive && setState({ data, loading: false }))
+      .catch(() => alive && setState((s) => ({ ...s, loading: false })));
+    return () => {
+      alive = false;
+    };
+  }, [locale]);
+
+  return state;
+};
 
 export type PagedGallery = {
   meta: GalleryDetailResponse | undefined;

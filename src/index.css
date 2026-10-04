@@ -91,3 +91,69 @@ button {
   scrollbar-width: thin;
   scrollbar-color: #26262b #0c0c0e;
 }
+
+/* Keep password-manager / browser autofill from painting its own (grey or yellow)
+   background over the transparent form fields. The background can't be overridden
+   directly, so its transition is delayed indefinitely instead. */
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus,
+.field-input:autofill {
+  -webkit-text-fill-color: #ececec;
+  caret-color: #ececec;
+  transition: background-color 600000s 0s, color 600000s 0s;
+  box-shadow: none;
+}
+
+/* Long-form text (privacy notice, rendered from markdown). */
+.prose > :first-child {
+  margin-top: 0;
+}
+.prose h1,
+.prose h2,
+.prose h3 {
+  margin: 1.6em 0 0.5em;
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  line-height: 1.15;
+  color: #ececec;
+}
+.prose h1 {
+  font-size: clamp(28px, 4vw, 38px);
+}
+.prose h2 {
+  font-size: clamp(22px, 3vw, 28px);
+}
+.prose h3 {
+  font-size: 19px;
+}
+.prose p,
+.prose li {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: #a6a6a6;
+}
+.prose p + p,
+.prose p + ul,
+.prose ul + p {
+  margin-top: 0.8em;
+}
+.prose ul,
+.prose ol {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.prose strong {
+  font-weight: 500;
+  color: #ececec;
+}
+.prose a {
+  color: #ececec;
+}
+.prose hr {
+  display: none;
+}

@@ -29,7 +29,7 @@ export const Home = () => {
         onOpen={(img) => setHeroLightbox(heroImages.findIndex((i) => i.imageId === img.imageId))}
       />
 
-      <div id='galleries'>
+      <div id='albums'>
         {loading ? (
           <div style={styles.loadingWrap}>
             <GridSkeleton columns={3} count={6} />
@@ -38,7 +38,7 @@ export const Home = () => {
           sections.map((s) => <GallerySection key={s.id} section={s} />)
         ) : (
           <div style={styles.emptyWrap}>
-            <EmptyState title='No galleries yet' hint='Published galleries will appear here.' />
+            <EmptyState title='No albums yet' hint='Published albums will appear here.' />
           </div>
         )}
       </div>
@@ -59,9 +59,9 @@ const useStyles = mkUseStyles((t) => ({
   loadingWrap: {
     maxWidth: t.layout.maxWidth,
     margin: '0 auto',
-    padding: `clamp(48px, 8vh, 90px) clamp(20px, 5vw, 56px)`,
+    padding: 'clamp(48px, 8vh, 90px) clamp(20px, 5vw, 56px)',
   },
   emptyWrap: {
-    padding: `clamp(48px, 8vh, 90px) clamp(20px, 5vw, 56px)`,
+    padding: 'clamp(48px, 8vh, 90px) clamp(20px, 5vw, 56px)',
   },
 }));

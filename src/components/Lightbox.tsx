@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
-import { LuChevronLeft, LuChevronRight, LuInfo, LuMapPin, LuX } from 'react-icons/lu';
+import { LuChevronLeft, LuChevronRight, LuInfo, LuMapPin, LuMessageSquare, LuX } from 'react-icons/lu';
+import { Link } from 'react-router-dom';
 import { BlurImage } from '~/components/BlurImage';
 import { useResponsive } from '~/hooks/useResponsive';
+import { ContactLinkState, contactHref } from '~/lib/contact';
 import { fetchImageMeta, formatCamera, formatExifSpecs, hasExif, ImageMeta, PortfolioImage } from '~/lib/portfolio';
 import { mkUseStyles, useTheme } from '~/utils/theme';
 
@@ -11,9 +13,11 @@ type LightboxProps = {
   index: number | null;
   onClose: () => void;
   onIndex: (i: number) => void;
+  /** Gallery the images belong to — enables "Ask about this photo". */
+  gallery?: { id: string; title: string };
 };
 
-export const Lightbox = ({ images, index, onClose, onIndex }: LightboxProps) => {
+export const Lightbox = ({ images, index, onClose, onIndex, gallery }: LightboxProps) => {
   const styles = useStyles();
   const theme = useTheme();
   const { isMobile } = useResponsive();
@@ -48,15 +52,16 @@ export const Lightbox = ({ images, index, onClose, onIndex }: LightboxProps) => 
     setShowInfo(open ? !isMobile : false);
   }, [open, isMobile]);
 
+  const imageId = current?.imageId;
   useEffect(() => {
-    if (!current) return;
+    if (!imageId) return;
     setMeta(null);
     const controller = new AbortController();
-    fetchImageMeta(current.imageId, controller.signal)
+    fetchImageMeta(imageId, controller.signal)
       .then(setMeta)
       .catch(() => undefined);
     return () => controller.abort();
-  }, [current?.imageId]);
+  }, [imageId]);
 
   const specs = current ? formatExifSpecs(current.exif) : '';
   const camera = current ? formatCamera(current.exif) : '';
@@ -83,6 +88,18 @@ export const Lightbox = ({ images, index, onClose, onIndex }: LightboxProps) => 
               <span style={styles.counterFaint}>/ {String(count).padStart(2, '0')}</span>
             </span>
             <div style={styles.topRight}>
+              {gallery && (
+                <Link
+                  to={contactHref(gallery.id, current.imageId)}
+                  state={{ galleryTitle: gallery.title, thumbUrl: current.lowResUrl } satisfies ContactLinkState}
+                  style={styles.askBtn}
+                  aria-label='Ask about this photo'
+                  title='Ask about this photo'
+                >
+                  <LuMessageSquare size={isMobile ? 18 : 16} />
+                  {!isMobile && <span style={{ marginLeft: 8 }}>Ask about this photo</span>}
+                </Link>
+              )}
               {hasInfo && (
                 <button
                   style={{ ...styles.iconBtn, color: showInfo ? theme.colors.text : theme.colors.textMuted }}
@@ -232,6 +249,17 @@ const useStyles = mkUseStyles((t) => ({
     alignItems: 'center',
     gap: t.spacing.xs,
   },
+  askBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: t.spacing.xs,
+    marginRight: t.spacing.xs,
+    fontSize: 11,
+    letterSpacing: '0.16em',
+    textTransform: 'uppercase',
+    color: t.colors.textMuted,
+    textDecoration: 'none',
+  },
   iconBtn: {
     background: 'none',
     border: 'none',
@@ -276,7 +304,7 @@ const useStyles = mkUseStyles((t) => ({
     right: 0,
     bottom: 0,
     zIndex: 4,
-    padding: `clamp(40px, 10vh, 80px) clamp(16px, 4vw, 48px) clamp(16px, 3vh, 28px)`,
+    padding: 'clamp(40px, 10vh, 80px) clamp(16px, 4vw, 48px) clamp(16px, 3vh, 28px)',
     background: 'linear-gradient(0deg, rgba(9,9,11,0.96) 0%, rgba(9,9,11,0.75) 55%, rgba(9,9,11,0) 100%)',
     pointerEvents: 'none',
   },

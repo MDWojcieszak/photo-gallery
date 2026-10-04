@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { LuArrowLeft, LuPlus } from 'react-icons/lu';
+import { LuArrowLeft, LuArrowUpRight, LuPlus } from 'react-icons/lu';
 import { Link, useParams } from 'react-router-dom';
 import { Footer } from '~/components/Footer';
 import { Lightbox } from '~/components/Lightbox';
@@ -10,6 +10,8 @@ import { EmptyState, GridSkeleton } from '~/components/states';
 import { useGalleryPaged, useSettings } from '~/hooks/usePortfolio';
 import { useSeo } from '~/hooks/useSeo';
 import { SITE } from '~/config';
+import { ContactLinkState, contactHref } from '~/lib/contact';
+import { contactFormOpen } from '~/lib/portfolio';
 import { mkUseStyles, useTheme } from '~/utils/theme';
 
 const DEFAULT_PAGE_SIZE = 24;
@@ -30,12 +32,13 @@ export const GalleryPage = () => {
   };
 
   useSeo({
-    title: meta ? `${meta.title} — ${SITE.name}` : `Gallery — ${SITE.name}`,
-    description: meta?.description ?? `A photo gallery by ${SITE.name}.`,
+    title: meta ? `${meta.title} — ${SITE.name}` : `Album — ${SITE.name}`,
+    description: meta?.description ?? `A photo album by ${SITE.name}.`,
     path: `/portfolio/${slug ?? ''}`,
   });
 
   const remaining = meta ? meta.imageCount - items.length : 0;
+  const canAsk = contactFormOpen(meta?.contact);
 
   return (
     <div style={styles.page}>
@@ -49,16 +52,30 @@ export const GalleryPage = () => {
             </Link>
 
             {error === 'notfound' ? (
-              <h1 style={styles.title}>Gallery not found</h1>
+              <h1 style={styles.title}>Album not found</h1>
             ) : (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <span style={styles.eyebrow}>Collection</span>
                 <h1 style={styles.title}>{meta?.title ?? (loading ? 'Loading…' : '')}</h1>
                 {meta?.description && <p style={styles.description}>{meta.description}</p>}
                 {meta && (
-                  <span style={styles.count}>
-                    {meta.imageCount} {meta.imageCount === 1 ? 'photograph' : 'photographs'}
-                  </span>
+                  <div style={styles.metaRow}>
+                    <span style={styles.count}>
+                      {meta.imageCount} {meta.imageCount === 1 ? 'photograph' : 'photographs'}
+                    </span>
+                    {canAsk && (
+                      <Link
+                        to={contactHref(meta.id)}
+                        state={
+                          { galleryTitle: meta.title, thumbUrl: meta.coverUrl ?? undefined } satisfies ContactLinkState
+                        }
+                        style={styles.ask}
+                      >
+                        Ask about this album
+                        <LuArrowUpRight size={13} style={{ marginLeft: 6 }} />
+                      </Link>
+                    )}
+                  </div>
                 )}
               </motion.div>
             )}
@@ -67,13 +84,13 @@ export const GalleryPage = () => {
 
         <div style={styles.body}>
           {error === 'notfound' ? (
-            <EmptyState title='This gallery isn’t available' hint='It may be unpublished or the link is incorrect.' />
+            <EmptyState title='This album isn’t available' hint='It may be unpublished or the link is incorrect.' />
           ) : error === 'error' ? (
             <EmptyState title='Something went wrong' hint='Please try again in a moment.' />
           ) : loading ? (
             <GridSkeleton columns={3} />
           ) : items.length === 0 ? (
-            <EmptyState title='This gallery is empty' hint='No photographs to show yet.' />
+            <EmptyState title='This album is empty' hint='No photographs to show yet.' />
           ) : (
             <>
               <MasonryGrid images={items} maxColumns={3} onOpen={openById} />
@@ -103,6 +120,7 @@ export const GalleryPage = () => {
         index={lightboxIndex}
         onClose={() => setLightboxIndex(null)}
         onIndex={setLightboxIndex}
+        gallery={meta && canAsk ? { id: meta.id, title: meta.title } : undefined}
       />
     </div>
   );
@@ -123,7 +141,7 @@ const useStyles = mkUseStyles((t) => ({
   headerInner: {
     maxWidth: t.layout.maxWidth,
     margin: '0 auto',
-    padding: `0 clamp(20px, 5vw, 56px)`,
+    padding: '0 clamp(20px, 5vw, 56px)',
   },
   back: {
     display: 'inline-flex',
@@ -157,9 +175,25 @@ const useStyles = mkUseStyles((t) => ({
     lineHeight: 1.7,
     color: t.colors.textMuted,
   },
+  metaRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: t.spacing.l,
+    rowGap: t.spacing.s,
+    marginTop: t.spacing.m,
+  },
+  ask: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: 11,
+    letterSpacing: '0.16em',
+    textTransform: 'uppercase',
+    color: t.colors.textMuted,
+    textDecoration: 'none',
+  },
   count: {
     display: 'inline-block',
-    marginTop: t.spacing.m,
     fontSize: 11,
     letterSpacing: '0.16em',
     textTransform: 'uppercase',
