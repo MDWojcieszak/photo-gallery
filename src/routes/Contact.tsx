@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ComponentType, useState } from 'react';
-import { LuArrowUpRight, LuCheck, LuCopy, LuInstagram, LuMail, LuMapPin, LuPhone } from 'react-icons/lu';
+import { LuArrowUpRight, LuCheck, LuCopy, LuInstagram, LuMail, LuMapPin } from 'react-icons/lu';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { Footer } from '~/components/Footer';
 import { InquiryContext, InquiryForm } from '~/components/InquiryForm';
@@ -136,13 +136,6 @@ export const Contact = () => {
   });
 
   const rows: Row[] = [
-    {
-      icon: LuPhone,
-      label: 'Phone',
-      value: CONTACT.phone,
-      href: `tel:${CONTACT.phone.replace(/\s+/g, '')}`,
-      copy: CONTACT.phone,
-    },
     { icon: LuMail, label: 'Email', value: CONTACT.email, href: `mailto:${CONTACT.email}`, copy: CONTACT.email },
     {
       icon: LuInstagram,

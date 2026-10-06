@@ -15,7 +15,6 @@ export const SITE = {
 } as const;
 
 export const CONTACT = {
-  phone: '+48 602 127 672',
   email: 'mateusz@wojcieszak.dev',
   instagram: 'https://www.instagram.com/mdwo.j',
   instagramHandle: 'mdwo.j',
