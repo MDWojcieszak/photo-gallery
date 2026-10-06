@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { PhotoTile } from '~/components/PhotoTile';
-import { useResponsive } from '~/hooks/useResponsive';
+import { useGridColumns } from '~/hooks/useGridColumns';
 import { aspectRatio, PortfolioImage } from '~/lib/portfolio';
 import { splitIntoColumns } from '~/utils/masonry';
 import { mkUseStyles } from '~/utils/theme';
@@ -11,23 +11,40 @@ type MasonryGridProps = {
   onOpen: (imageId: string) => void;
 };
 
+const GAP = 'clamp(8px, 1vw, 16px)';
+/** Tallest a single row of photos may get, so one or two photos don't fill the screen. */
+const ROW_MAX_HEIGHT = 'min(70vh, 720px)';
+
 export const MasonryGrid = ({ images, maxColumns = 3, onOpen }: MasonryGridProps) => {
   const styles = useStyles();
-  const { device } = useResponsive();
+  const columns = useGridColumns(maxColumns);
+  // Everything fits in one row → equal-height row instead of stretched columns.
+  const asRow = columns > 1 && images.length > 0 && images.length <= columns;
 
-  const columns = useMemo(() => {
-    const base =
-      device === 'mobile' || device === 'largeMobile'
-        ? 1
-        : device === 'tablet'
-          ? 2
-          : device === 'largeScreen'
-            ? maxColumns + 1
-            : maxColumns;
-    return Math.min(base, maxColumns + 1, Math.max(images.length, 1));
-  }, [device, maxColumns, images.length]);
+  const cols = useMemo(
+    () => (asRow ? [] : splitIntoColumns(images, columns, (img) => aspectRatio(img))),
+    [asRow, images, columns],
+  );
 
-  const cols = useMemo(() => splitIntoColumns(images, columns, (img) => aspectRatio(img)), [images, columns]);
+  if (asRow) {
+    // Widths proportional to aspect ratios ⇒ every photo ends up the same height.
+    const ratios = images.map((img) => aspectRatio(img));
+    const sum = ratios.reduce((a, b) => a + b, 0);
+    return (
+      <div
+        style={{
+          ...styles.row,
+          maxWidth: `calc(${sum.toFixed(4)} * ${ROW_MAX_HEIGHT} + ${images.length - 1} * ${GAP})`,
+        }}
+      >
+        {images.map((img, i) => (
+          <div key={img.imageId} style={{ ...styles.rowItem, flex: `${ratios[i].toFixed(4)} 1 0%` }}>
+            <PhotoTile image={img} onClick={() => onOpen(img.imageId)} />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div style={styles.grid}>
@@ -46,7 +63,7 @@ const useStyles = mkUseStyles(() => ({
   grid: {
     display: 'flex',
     flexDirection: 'row',
-    gap: 'clamp(8px, 1vw, 16px)',
+    gap: GAP,
     alignItems: 'flex-start',
   },
   col: {
@@ -54,6 +71,15 @@ const useStyles = mkUseStyles(() => ({
     minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(8px, 1vw, 16px)',
+    gap: GAP,
+  },
+  row: {
+    display: 'flex',
+    gap: GAP,
+    alignItems: 'flex-start',
+    margin: '0 auto',
+  },
+  rowItem: {
+    minWidth: 0,
   },
 }));

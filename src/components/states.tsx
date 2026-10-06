@@ -1,7 +1,10 @@
+import { useGridColumns } from '~/hooks/useGridColumns';
 import { mkUseStyles } from '~/utils/theme';
 
-export const GridSkeleton = ({ columns = 3, count = 9 }: { columns?: number; count?: number }) => {
+/** Same column count as MasonryGrid on this screen, so loading → content doesn't reflow. */
+export const GridSkeleton = ({ maxColumns = 3, count = 9 }: { maxColumns?: number; count?: number }) => {
   const styles = useStyles();
+  const columns = useGridColumns(maxColumns);
   const ratios = [0.7, 1.3, 1, 1.5, 0.8, 1.2, 1, 0.9, 1.4];
   const cols = Array.from({ length: columns }, () => [] as number[]);
   for (let i = 0; i < count; i++) cols[i % columns].push(ratios[i % ratios.length]);
@@ -46,7 +49,7 @@ const useStyles = mkUseStyles((t) => ({
     borderRadius: t.borderRadius.small,
     background: `linear-gradient(100deg, ${t.colors.surface} 30%, ${t.colors.surface02} 50%, ${t.colors.surface} 70%)`,
     backgroundSize: '200% 100%',
-    animation: 'shimmer 1.4s infinite linear',
+    animation: 'skeleton-in 0.4s ease-out 0.3s both, shimmer 1.4s 0.3s infinite linear',
   },
   center: {
     textAlign: 'center',

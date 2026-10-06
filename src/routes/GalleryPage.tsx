@@ -56,7 +56,7 @@ export const GalleryPage = () => {
             ) : (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <span style={styles.eyebrow}>Collection</span>
-                <h1 style={styles.title}>{meta?.title ?? (loading ? 'Loading…' : '')}</h1>
+                <h1 style={styles.title}>{meta?.title ?? ' '}</h1>
                 {meta?.description && <p style={styles.description}>{meta.description}</p>}
                 {meta && (
                   <div style={styles.metaRow}>
@@ -88,7 +88,7 @@ export const GalleryPage = () => {
           ) : error === 'error' ? (
             <EmptyState title='Something went wrong' hint='Please try again in a moment.' />
           ) : loading ? (
-            <GridSkeleton columns={3} />
+            <GridSkeleton maxColumns={3} />
           ) : items.length === 0 ? (
             <EmptyState title='This album is empty' hint='No photographs to show yet.' />
           ) : (
