@@ -36,6 +36,8 @@ jobs:
           API_URL: ${{ vars.DEPLOY_API_URL || 'https://api.whcp.pl' }}
           APP_SLUG: ${{ vars.DEPLOY_APP_SLUG || 'photo-portfolio' }}
           SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+          # Shown in the panel as who started the release.
+          ACTOR: ${{ github.actor }}
         run: |
           if [ -z "$SECRET" ]; then
             echo "::error::DEPLOY_WEBHOOK_SECRET is not set (Settings → Secrets and variables → Actions → Secrets)"
@@ -47,4 +49,4 @@ jobs:
           curl --fail-with-body -sS -X POST "$API_URL/deploy/webhook/$APP_SLUG" \
             -H "Content-Type: application/json" \
             -H "x-deploy-secret: $SECRET" \
-            -d "{\"version\":\"${GITHUB_SHA::7}\"}"
+            -d "{\"version\":\"${GITHUB_SHA::7}\",\"triggeredBy\":\"GitHub Actions · ${ACTOR} · ${GITHUB_SHA::7}\"}"
