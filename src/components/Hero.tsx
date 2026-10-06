@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { LuExpand } from 'react-icons/lu';
 import { BlurImage } from '~/components/BlurImage';
+import { apiUrl } from '~/config';
 import { useResponsive } from '~/hooks/useResponsive';
 import { PortfolioImage } from '~/lib/portfolio';
 import { mkUseStyles, useTheme } from '~/utils/theme';
@@ -16,26 +17,69 @@ const MOBILE_SCRIM =
 
 type HeroProps = {
   images: PortfolioImage[];
-  loading?: boolean;
   onOpen?: (image: PortfolioImage) => void;
+  /** Called once the first photo is decoded and on screen. */
+  onReady?: () => void;
+  /** False while an opening curtain covers the page — the text makes its entrance after. */
+  entered?: boolean;
 };
 
-export const Hero = ({ images, loading, onOpen }: HeroProps) => {
+export const Hero = ({ images, onOpen, onReady, entered = true }: HeroProps) => {
   const styles = useStyles();
   const theme = useTheme();
   const { isMobile } = useResponsive();
-  const [index, setIndex] = useState(0);
+  // Index of the slide on screen; null until the first photo is decoded.
+  const [active, setActive] = useState<number | null>(null);
+  const decoded = useRef(new Set<string>());
+  const request = useRef(0);
 
   const count = images.length;
-  const active = ((index % Math.max(count, 1)) + Math.max(count, 1)) % Math.max(count, 1);
+
+  /** Download + decode a slide's photo so it can appear fully sharp, with no blur stage. */
+  const preload = useCallback((img: PortfolioImage | undefined): Promise<void> => {
+    const src = img && apiUrl(img.coverUrl);
+    if (!src || decoded.current.has(src)) return Promise.resolve();
+    const el = new Image();
+    el.src = src;
+    return el
+      .decode()
+      .catch(() => undefined)
+      .then(() => {
+        decoded.current.add(src);
+      });
+  }, []);
+
+  /** Switch only once the target photo is ready; a newer request wins over an older one. */
+  const goTo = useCallback(
+    (i: number) => {
+      const token = ++request.current;
+      preload(images[i]).then(() => {
+        if (token === request.current) setActive(i);
+      });
+    },
+    [images, preload],
+  );
 
   useEffect(() => {
-    if (count <= 1) return;
-    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), AUTOPLAY_MS);
-    return () => window.clearInterval(id);
-  }, [count]);
+    if (count) goTo(0);
+    else setActive(null);
+  }, [count, goTo]);
 
-  const current = images[active];
+  // Autoplay: warm the next photo right away, advance when its time comes and it's ready.
+  useEffect(() => {
+    if (active === null || count <= 1) return;
+    const next = (active + 1) % count;
+    preload(images[next]);
+    const id = window.setTimeout(() => goTo(next), AUTOPLAY_MS);
+    return () => window.clearTimeout(id);
+  }, [active, count, images, preload, goTo]);
+
+  const current = active === null ? undefined : images[active];
+
+  const shown = active !== null;
+  useEffect(() => {
+    if (shown) onReady?.();
+  }, [shown, onReady]);
   const dots = Math.min(count, MAX_DOTS);
 
   const open = useCallback(() => {
@@ -55,7 +99,12 @@ export const Hero = ({ images, loading, onOpen }: HeroProps) => {
               exit={{ opacity: 0 }}
               transition={{ opacity: { duration: 1 }, scale: { duration: 7, ease: 'linear' } }}
             >
-              <BlurImage cover={current.coverUrl} lowRes={current.lowResUrl} priority ratio={undefined} />
+              <BlurImage
+                cover={current.coverUrl}
+                lowRes={current.lowResUrl}
+                priority
+                style={{ backgroundColor: 'transparent' }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -66,7 +115,7 @@ export const Hero = ({ images, loading, onOpen }: HeroProps) => {
         <motion.h1
           style={{ ...styles.title, fontSize: isMobile ? 'clamp(44px, 15vw, 72px)' : 'clamp(64px, 7vw, 120px)' }}
           initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={entered ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 0.9, ease: 'easeOut' }}
         >
           Selected
@@ -77,7 +126,7 @@ export const Hero = ({ images, loading, onOpen }: HeroProps) => {
         <motion.p
           style={styles.subtitle}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: entered ? 1 : 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
           Light remembers what time forgets.
@@ -88,7 +137,7 @@ export const Hero = ({ images, loading, onOpen }: HeroProps) => {
             style={styles.fullscreen}
             onClick={open}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: entered ? 1 : 0 }}
             transition={{ duration: 0.8, delay: 0.7 }}
             whileHover={{ color: theme.colors.text }}
           >
@@ -100,11 +149,11 @@ export const Hero = ({ images, loading, onOpen }: HeroProps) => {
           <motion.div
             style={{ ...styles.dots, flexDirection: isMobile ? 'row' : 'column' }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: entered ? 1 : 0 }}
             transition={{ duration: 0.8, delay: 0.9 }}
           >
             {Array.from({ length: dots }).map((_, i) => (
-              <button key={i} style={styles.dotBtn} onClick={() => setIndex(i)} aria-label={`Slide ${i + 1}`}>
+              <button key={i} style={styles.dotBtn} onClick={() => goTo(i)} aria-label={`Slide ${i + 1}`}>
                 <span style={{ ...styles.dotNum, color: i === active ? theme.colors.text : theme.colors.textFaint }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -114,8 +163,6 @@ export const Hero = ({ images, loading, onOpen }: HeroProps) => {
           </motion.div>
         )}
       </div>
-
-      {loading && count === 0 && <div style={styles.loadingHint} />}
     </section>
   );
 };
@@ -207,11 +254,5 @@ const useStyles = mkUseStyles((t) => ({
     height: 1,
     backgroundColor: t.colors.text,
     transition: 'width 0.4s, opacity 0.4s',
-  },
-  loadingHint: {
-    position: 'absolute',
-    inset: 0,
-    background: `linear-gradient(100deg, ${t.colors.ink}, ${t.colors.surface}, ${t.colors.ink})`,
-    zIndex: 0,
   },
 }));
