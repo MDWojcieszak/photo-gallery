@@ -68,6 +68,18 @@ const RouteTransitions = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // A link to the page you're already on (e.g. Home while at /#albums) doesn't change the route,
+  // so there's no transition to scroll after it: go to the top, or to the new section, here.
+  const prevPath = useRef(location.pathname);
+  useEffect(() => {
+    const samePage = prevPath.current === location.pathname;
+    prevPath.current = location.pathname;
+    if (!samePage || navType === 'POP') return;
+    if (location.hash) scrollToHash(location.hash);
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+
   const onExitComplete = () => {
     const { location: loc, navType: nt } = latest.current;
     if (loc.hash) {
